@@ -34,6 +34,13 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isLoading = true;
   bool _hasError = false;
   String _errorMessage = '';
+  int _selectedIndex = 0;
+  final List<String> _urls = [
+    'https://www.pearloc.com/',
+    'https://www.pearloc.com/featured/',
+    'https://www.pearloc.com/store/',
+    'https://www.pearloc.com/my-account/',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +55,27 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+            _loadUrl(_urls[index]);
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Featured'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_bag),
+            label: 'Store',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
+        ],
       ),
     );
   }
@@ -90,6 +118,22 @@ class _MyHomePageState extends State<MyHomePage> {
                     element.style.display = 'none';
                   }
                 });
+                
+                // Hide the cart floating button
+                var cartButtons = document.querySelectorAll('a[href*="cart"]');
+                cartButtons.forEach(function(button) {
+                  button.style.display = 'none';
+                });
+                
+                // Hide elements containing the number 0 in top right (likely cart count)
+                var zeroElements = document.querySelectorAll('div, span, a');
+                zeroElements.forEach(function(element) {
+                  if (element.textContent === '0' && 
+                      element.getBoundingClientRect().right > window.innerWidth * 0.8 &&
+                      element.getBoundingClientRect().top < window.innerHeight * 0.2) {
+                    element.style.display = 'none';
+                  }
+                });
               })();
             ''');
           },
@@ -104,5 +148,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       )
       ..loadRequest(Uri.parse('https://www.pearloc.com/'));
+  }
+
+  void _loadUrl(String url) {
+    _controller.loadRequest(Uri.parse(url));
   }
 }
