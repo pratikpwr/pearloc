@@ -116,7 +116,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           const SizedBox(height: 16),
                           Text(
                             'No Internet Connection',
-                            style: Theme.of(context).textTheme.titleLarge
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
                                 ?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black87,
@@ -126,7 +128,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           Text(
                             'Please check your internet connection and try again',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
                                 ?.copyWith(color: Colors.black54),
                           ),
                           const SizedBox(height: 24),
