@@ -70,6 +70,28 @@ class _MyHomePageState extends State<MyHomePage> {
               _isLoading = false;
             });
             FlutterNativeSplash.remove();
+
+            // Inject JavaScript to hide the black banner at the top
+            _controller.runJavaScript('''
+              (function() {
+                // Target the black banner at the top
+                var banners = document.querySelectorAll('div[style*="background-color: #000000"]');
+                banners.forEach(function(banner) {
+                  banner.style.display = 'none';
+                });
+                
+                // Alternative approach targeting elements with the specific text
+                var allElements = document.querySelectorAll('div');
+                allElements.forEach(function(element) {
+                  if (element.textContent && 
+                      element.textContent.includes('Delivery') && 
+                      element.textContent.includes('COD Available') &&
+                      element.textContent.includes('10% off on Prepaid')) {
+                    element.style.display = 'none';
+                  }
+                });
+              })();
+            ''');
           },
           onWebResourceError: (WebResourceError error) {
             setState(() {
