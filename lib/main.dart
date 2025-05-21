@@ -1,4 +1,8 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -34,6 +38,8 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isLoading = true;
   bool _hasError = false;
   String _errorMessage = '';
+  bool _isConnected = true;
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   int _selectedIndex = 0;
   final List<String> _urls = [
     'https://www.pearloc.com/',
@@ -48,10 +54,76 @@ class _MyHomePageState extends State<MyHomePage> {
       body: SafeArea(
         child: Stack(
           children: [
-            WebViewWidget(controller: _controller),
-            if (_isLoading)
+            if (_isConnected) WebViewWidget(controller: _controller),
+            if (_isLoading && _isConnected)
               const Center(
                 child: CircularProgressIndicator(color: Colors.black),
+              ),
+            if (!_isConnected)
+              Column(
+                children: [
+                  const SizedBox(height: 40),
+                  // Logo at the top
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Image.asset(
+                      'assets/logo/pearloc_logo.png',
+                      width: 120,
+                      height: 56,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  // Center the no internet UI
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.signal_wifi_off_rounded,
+                            size: 80,
+                            color: Colors.black54,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No Internet Connection',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Please check your internet connection and try again',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Colors.black54),
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              checkConnectivity();
+                            },
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Retry'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
           ],
         ),
@@ -80,9 +152,44 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void checkConnectivity() {
+    Connectivity().checkConnectivity().then((ConnectivityResult result) {
+      setState(() {
+        _isConnected = result != ConnectivityResult.none;
+      });
+      if (_isConnected) {
+        _loadUrl(_urls[_selectedIndex]);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [SystemUiOverlay.bottom],
+    );
+    // Check initial connectivity
+    checkConnectivity();
+    // Subscribe to connectivity changes
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((
+      ConnectivityResult result,
+    ) {
+      setState(() {
+        _isConnected = result != ConnectivityResult.none;
+      });
+      if (_isConnected) {
+        _loadUrl(_urls[_selectedIndex]);
+      }
+    });
+
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
