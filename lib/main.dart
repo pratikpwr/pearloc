@@ -277,7 +277,6 @@ class _MyHomePageState extends State<MyHomePage> {
               _hasError = true;
               _errorMessage = '${error.errorType}: ${error.description}';
             });
-            FlutterNativeSplash.remove();
           },
         ),
       )
