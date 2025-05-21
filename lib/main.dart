@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   runApp(const MyApp());
 }
 
@@ -94,6 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
             setState(() {
               _isLoading = false;
             });
+            FlutterNativeSplash.remove();
           },
           onWebResourceError: (WebResourceError error) {
             setState(() {
@@ -101,6 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
               _hasError = true;
               _errorMessage = '${error.errorType}: ${error.description}';
             });
+            FlutterNativeSplash.remove();
           },
         ),
       )
