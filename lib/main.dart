@@ -42,37 +42,9 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Stack(
           children: [
             WebViewWidget(controller: _controller),
-            if (_isLoading) const Center(child: CircularProgressIndicator()),
-            if (_hasError)
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: Colors.red,
-                      size: 60,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Error loading website',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(_errorMessage),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _hasError = false;
-                          _isLoading = true;
-                        });
-                        _controller.reload();
-                      },
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
+            if (_isLoading)
+              const Center(
+                child: CircularProgressIndicator(color: Colors.black),
               ),
           ],
         ),
