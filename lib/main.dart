@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
@@ -64,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _hasError = false;
   String _errorMessage = '';
   bool _isConnected = true;
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
   int _selectedIndex = 0;
   final List<String> _urls = [
     'https://www.pearloc.com/',
@@ -116,9 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           const SizedBox(height: 16),
                           Text(
                             'No Internet Connection',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
+                            style: Theme.of(context).textTheme.titleLarge
                                 ?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black87,
@@ -128,9 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           Text(
                             'Please check your internet connection and try again',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
+                            style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(color: Colors.black54),
                           ),
                           const SizedBox(height: 24),
@@ -184,9 +181,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void checkConnectivity() {
-    Connectivity().checkConnectivity().then((ConnectivityResult result) {
+    Connectivity().checkConnectivity().then((List<ConnectivityResult> results) {
       setState(() {
-        _isConnected = result != ConnectivityResult.none;
+        _isConnected =
+            results.isNotEmpty && !results.contains(ConnectivityResult.none);
       });
       if (_isConnected) {
         _loadUrl(_urls[_selectedIndex]);
@@ -211,10 +209,11 @@ class _MyHomePageState extends State<MyHomePage> {
     checkConnectivity();
     // Subscribe to connectivity changes
     _connectivitySubscription = Connectivity().onConnectivityChanged.listen((
-      ConnectivityResult result,
+      List<ConnectivityResult> results,
     ) {
       setState(() {
-        _isConnected = result != ConnectivityResult.none;
+        _isConnected =
+            results.isNotEmpty && !results.contains(ConnectivityResult.none);
       });
       if (_isConnected) {
         _loadUrl(_urls[_selectedIndex]);
@@ -225,6 +224,14 @@ class _MyHomePageState extends State<MyHomePage> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
+          onNavigationRequest: (NavigationRequest request) {
+            // Check if the URL should be opened externally
+            if (_shouldOpenExternally(request.url)) {
+              _launchExternalUrl(request.url);
+              return NavigationDecision.prevent; // Prevent loading in webview
+            }
+            return NavigationDecision.navigate; // Allow normal navigation
+          },
           onPageStarted: (String url) {
             setState(() {
               _isLoading = true;
@@ -287,7 +294,73 @@ class _MyHomePageState extends State<MyHomePage> {
       ..loadRequest(Uri.parse('https://www.pearloc.com/'));
   }
 
+  // Helper method to launch URL externally
+  Future<void> _launchExternalUrl(String url) async {
+    try {
+      // Special handling for WhatsApp URLs - force browser opening
+      if (url.contains('api.whatsapp.com/send') || url.contains('wa.me')) {
+        final uri = Uri.parse(url);
+        // Always open WhatsApp links in browser
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return;
+      }
+      // Handle Instagram URLs - force browser opening
+      else if (url.contains('instagram.com') || url.contains('instagr.am')) {
+        final uri = Uri.parse(url);
+        // Always open Instagram links in browser
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return;
+      }
+      // Handle other URLs (tel, mailto, sms, etc.)
+      else {
+        final uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          return;
+        }
+      }
+    } catch (e) {
+      // If all else fails, try to open in browser
+      try {
+        final uri = Uri.parse(url);
+        await launchUrl(uri, mode: LaunchMode.externalNonBrowserApplication);
+      } catch (e2) {
+        // Last resort: open in browser
+        final uri = Uri.parse(url);
+        await launchUrl(uri);
+      }
+    }
+  }
+
   void _loadUrl(String url) {
     _controller.loadRequest(Uri.parse(url));
+  }
+
+  // Helper method to check if URL should be opened externally
+  bool _shouldOpenExternally(String url) {
+    final uri = Uri.parse(url);
+
+    // Check for WhatsApp links
+    if (url.contains('wa.me') ||
+        url.contains('whatsapp.com') ||
+        url.contains('api.whatsapp.com') ||
+        url.contains('web.whatsapp.com') ||
+        uri.scheme == 'whatsapp') {
+      return true;
+    }
+
+    // Check for Instagram links
+    if (url.contains('instagram.com') ||
+        url.contains('instagr.am') ||
+        uri.scheme == 'instagram') {
+      return true;
+    }
+
+    // Check for other social media or external app schemes
+    if (uri.scheme == 'tel' || uri.scheme == 'mailto' || uri.scheme == 'sms') {
+      return true;
+    }
+
+    return false;
   }
 }
