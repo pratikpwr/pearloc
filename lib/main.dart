@@ -185,7 +185,7 @@ class _MyHomePageState extends State<MyHomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Featured'),
           BottomNavigationBarItem(
             icon: Icon(Icons.play_circle_filled),
-            label: 'Watch and Shop',
+            label: 'Watch & Shop',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
@@ -385,7 +385,7 @@ class _VideoReelsScreenState extends State<VideoReelsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           // Fullscreen WebView for video content
@@ -393,7 +393,7 @@ class _VideoReelsScreenState extends State<VideoReelsScreen> {
 
           // Loading indicator
           if (_isLoading)
-            const Center(child: CircularProgressIndicator(color: Colors.white)),
+            const Center(child: CircularProgressIndicator(color: Colors.black)),
         ],
       ),
     );
@@ -428,193 +428,158 @@ class _VideoReelsScreenState extends State<VideoReelsScreen> {
               _isLoading = false;
             });
 
-            // Wait a moment for the page to fully load, then scroll to videos and auto-play
-            Future.delayed(const Duration(milliseconds: 1000), () {
+            // Auto-click the first video after the page loads
+            // Increased delay to allow external Whatmore script to load
+            Future.delayed(const Duration(milliseconds: 300), () {
               _videoController.runJavaScript('''
-                (function() {
-                  // Function to find and scroll to "Watch and more" section
-                  function findAndScrollToVideoSection() {
-                    // Look for "Watch and more" text or similar video section indicators
-                    var watchSectionCandidates = [];
+                  (function() {
+                    console.log('Attempting to auto-click first video...');
                     
-                    // Search for text that might indicate the video section
-                    var allElements = document.querySelectorAll('*');
-                    allElements.forEach(function(element) {
-                      var text = element.textContent || element.innerText || '';
-                      if (text.toLowerCase().includes('watch and more') ||
-                          text.toLowerCase().includes('watch & more') ||
-                          text.toLowerCase().includes('videos') ||
-                          text.toLowerCase().includes('video content') ||
-                          text.toLowerCase().includes('watch now')) {
-                        watchSectionCandidates.push(element);
+                    // Function to check if Whatmore script has loaded
+                    function isWhatmoreLoaded() {
+                      // Check if the external script has created any content
+                      var whatmoreContainer = document.querySelector('.whatmore-render-root');
+                      if (whatmoreContainer && whatmoreContainer.children.length > 0) {
+                        return true;
                       }
-                    });
-                    
-                    // Also look for sections that might contain video elements
-                    var videoSections = document.querySelectorAll(
-                      'section, .section, .video-section, .videos, ' +
-                      '.content-section, .products-section, .featured-section'
-                    );
-                    
-                    videoSections.forEach(function(section) {
-                      var sectionText = section.textContent || section.innerText || '';
-                      if (sectionText.toLowerCase().includes('watch') ||
-                          section.querySelector('video') ||
-                          section.querySelector('iframe') ||
-                          section.querySelector('[class*="video"]') ||
-                          section.querySelector('[class*="play"]')) {
-                        watchSectionCandidates.push(section);
-                      }
-                    });
-                    
-                    // Find the best candidate (usually the one with most video content)
-                    var bestSection = null;
-                    var maxVideoElements = 0;
-                    
-                    watchSectionCandidates.forEach(function(candidate) {
-                      var videoCount = candidate.querySelectorAll(
-                        'video, iframe, [class*="video"], [class*="play"], img[src*="play"]'
-                      ).length;
                       
-                      if (videoCount > maxVideoElements) {
-                        maxVideoElements = videoCount;
-                        bestSection = candidate;
+                      // Check if Whatmore global object exists (if the script creates one)
+                      if (typeof window.whatmore !== 'undefined' || typeof window.Whatmore !== 'undefined') {
+                        return true;
                       }
-                    });
-                    
-                    return bestSection;
-                  }
-                  
-                  // Function to find clickable video elements
-                  function findVideoElements(section) {
-                    if (!section) return [];
-                    
-                    var videoElements = [];
-                    
-                    // Look for various types of video triggers
-                    var candidates = section.querySelectorAll(
-                      'video, iframe, ' +
-                      '[class*="video"], [id*="video"], ' +
-                      '[class*="play"], [id*="play"], ' +
-                      '[class*="thumbnail"], [class*="thumb"], ' +
-                      'img[src*="play"], img[alt*="video"], img[alt*="play"], ' +
-                      'a[href*="video"], button[class*="play"], ' +
-                      '.product-item, .item, .card'
-                    );
-                    
-                    candidates.forEach(function(element) {
-                      // Check if this element looks like it should trigger a video
-                      var hasVideoIndicator = (
-                        element.querySelector('img[src*="play"]') ||
-                        element.querySelector('[class*="play"]') ||
-                        element.tagName.toLowerCase() === 'video' ||
-                        element.tagName.toLowerCase() === 'iframe' ||
-                        (element.textContent || '').toLowerCase().includes('play') ||
-                        element.classList.toString().toLowerCase().includes('video') ||
-                        element.classList.toString().toLowerCase().includes('play')
-                      );
                       
-                      if (hasVideoIndicator) {
-                        videoElements.push(element);
-                      }
-                    });
-                    
-                    return videoElements;
-                  }
-                  
-                  // Function to click on video elements
-                  function clickVideoElements(videoElements) {
-                    if (videoElements.length === 0) {
-                      console.log('No video elements found to click');
-                      return;
+                      // Check for any dynamically created content
+                      var hasContent = document.querySelectorAll('[class*="whatmore"]:not(.whatmore-base):not(.whatmore-render-root)').length > 0;
+                      return hasContent;
                     }
                     
-                    // Click on the first video element to open it
-                    var firstVideo = videoElements[0];
+                    // Function to find and click video elements
+                    function findAndClickFirstVideo() {
+                      // Wait for Whatmore content to load
+                      var attempts = 0;
+                      var maxAttempts = 15; // Increased attempts
                     
-                    // Try different ways to trigger the video
-                    try {
-                      // First try a direct click
-                      firstVideo.click();
-                      
-                      // If that doesn't work, try clicking on child elements immediately
-                      setTimeout(function() {
-                        var playButton = firstVideo.querySelector('[class*="play"], button, a');
-                        if (playButton) {
-                          playButton.click();
+                                          function tryClickVideo() {
+                        attempts++;
+                        console.log('Attempt ' + attempts + ' to find videos...');
+                        
+                        // First check if Whatmore has loaded
+                        if (!isWhatmoreLoaded()) {
+                          console.log('Whatmore script not loaded yet, waiting...');
+                          if (attempts < maxAttempts) {
+                            setTimeout(tryClickVideo, 1500); // Longer wait for external script
+                          } else {
+                            console.log('Whatmore script failed to load after max attempts');
+                          }
+                          return false;
                         }
                         
-                        // Also try triggering events
-                        var clickEvent = new MouseEvent('click', {
-                          view: window,
-                          bubbles: true,
-                          cancelable: true
-                        });
-                        firstVideo.dispatchEvent(clickEvent);
-                      }, 100);
-                      
-                    } catch (error) {
-                      console.log('Error clicking video element:', error);
-                    }
-                  }
-                  
-                  // Main execution
-                  console.log('Looking for Watch and more section...');
-                  
-                  var videoSection = findAndScrollToVideoSection();
-                  
-                  if (videoSection) {
-                    console.log('Found video section, scrolling to it...');
-                    
-                    // Scroll to the video section
-                    videoSection.scrollIntoView({ 
-                      behavior: 'smooth', 
-                      block: 'center' 
-                    });
-                    
-                    // Quick wait for scroll to complete, then find and click videos
-                    setTimeout(function() {
-                      var videoElements = findVideoElements(videoSection);
-                      
-                      if (videoElements.length > 0) {
-                        console.log('Found ' + videoElements.length + ' video elements, clicking first one...');
-                        clickVideoElements(videoElements);
-                      } else {
-                        console.log('No clickable video elements found in section');
+                        console.log('Whatmore script loaded, looking for videos...');
                         
-                        // Try searching in a broader area around the section
-                        var parentSection = videoSection.parentElement;
-                        if (parentSection) {
-                          var parentVideoElements = findVideoElements(parentSection);
-                          if (parentVideoElements.length > 0) {
-                            console.log('Found videos in parent section, clicking...');
-                            clickVideoElements(parentVideoElements);
+                        // Look for various video selectors that Whatmore might use
+                      var videoSelectors = [
+                        '.whatmore-video-item',
+                        '.whatmore-video',
+                        '.video-item',
+                        '.video-thumbnail',
+                        '[class*="video"]',
+                        '[class*="whatmore"] video',
+                        '[class*="whatmore"] .item',
+                        '.whatmore-render-root video',
+                        '.whatmore-render-root [class*="video"]',
+                        '.whatmore-render-root [class*="item"]',
+                        '.whatmore-render-root img',
+                        '.whatmore-render-root div[onclick]',
+                        '.whatmore-render-root button',
+                        '.whatmore-render-root a'
+                      ];
+                      
+                      var foundVideo = null;
+                      
+                      // Try each selector
+                      for (var i = 0; i < videoSelectors.length; i++) {
+                        var elements = document.querySelectorAll(videoSelectors[i]);
+                        if (elements.length > 0) {
+                          console.log('Found ' + elements.length + ' elements with selector: ' + videoSelectors[i]);
+                          foundVideo = elements[0];
+                          break;
+                        }
+                      }
+                      
+                      // If no specific video selectors work, try finding clickable elements in whatmore container
+                      if (!foundVideo) {
+                        var whatmoreContainer = document.querySelector('.whatmore-render-root, .whatmore-base, [class*="whatmore"]');
+                        if (whatmoreContainer) {
+                          // Look for any clickable elements within the container
+                          var clickableElements = whatmoreContainer.querySelectorAll(
+                            'div[onclick], button, a, [role="button"], [class*="click"], [class*="play"], img, video'
+                          );
+                          if (clickableElements.length > 0) {
+                            foundVideo = clickableElements[0];
+                            console.log('Found clickable element in whatmore container');
                           }
                         }
                       }
-                    }, 500);
-                    
-                  } else {
-                    console.log('Video section not found, trying to find videos on entire page...');
-                    
-                    // Fallback: look for videos anywhere on the page
-                    var allVideoElements = findVideoElements(document.body);
-                    
-                    if (allVideoElements.length > 0) {
-                      console.log('Found videos on page, scrolling to first one...');
                       
-                      allVideoElements[0].scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center' 
-                      });
-                      
-                      setTimeout(function() {
-                        clickVideoElements(allVideoElements);
-                      }, 300);
-                    } else {
-                      console.log('No videos found on page');
+                      if (foundVideo) {
+                        console.log('Found video element, attempting to click...');
+                        
+                        // Try multiple click methods
+                        try {
+                          // Method 1: Direct click
+                          foundVideo.click();
+                          console.log('Clicked using direct click');
+                          
+                          // Method 2: Dispatch click event
+                          setTimeout(function() {
+                            var clickEvent = new MouseEvent('click', {
+                              view: window,
+                              bubbles: true,
+                              cancelable: true
+                            });
+                            foundVideo.dispatchEvent(clickEvent);
+                            console.log('Dispatched click event');
+                          }, 100);
+                          
+                          // Method 3: Touch events (for mobile)
+                          setTimeout(function() {
+                            var touchStartEvent = new TouchEvent('touchstart', {
+                              bubbles: true,
+                              cancelable: true
+                            });
+                            var touchEndEvent = new TouchEvent('touchend', {
+                              bubbles: true,
+                              cancelable: true
+                            });
+                            foundVideo.dispatchEvent(touchStartEvent);
+                            foundVideo.dispatchEvent(touchEndEvent);
+                            console.log('Dispatched touch events');
+                          }, 200);
+                          
+                        } catch (error) {
+                          console.log('Error clicking video:', error);
+                        }
+                        
+                        return true; // Video found and clicked
+                      } else {
+                        console.log('No video elements found yet...');
+                        
+                        // If we haven't reached max attempts, try again
+                        if (attempts < maxAttempts) {
+                          setTimeout(tryClickVideo, 1500); // Longer intervals
+                        } else {
+                          console.log('Max attempts reached, giving up on auto-click');
+                        }
+                        return false;
+                      }
                     }
+                    
+                    // Start trying to click
+                    tryClickVideo();
                   }
+                  
+                  // Start the process
+                  findAndClickFirstVideo();
                   
                 })();
               ''');
@@ -622,7 +587,7 @@ class _VideoReelsScreenState extends State<VideoReelsScreen> {
           },
         ),
       )
-      ..loadRequest(Uri.parse('https://www.pearloc.com/'));
+      ..loadFlutterAsset('assets/pearloc_whatmore.html');
   }
 
   Future<void> _launchExternalUrl(String url) async {

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch and Shop</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            font-family: sans-serif;
+        }
+
+        .whatmore-base {
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 50vh;
+            flex-direction: column;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #d97777;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            margin-top: 15px;
+            color: #666;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="whatmore-base">
+        <!-- Loading indicator -->
+        <div class="loading-container" id="loadingContainer">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading videos...</div>
+        </div>
+
+        <!-- Preload the script with higher priority -->
+        <link rel="preload" href="https://d1qflh9ill7vje.cloudfront.net/whatmore.js" as="script">
+        <script type="text/javascript" src="https://d1qflh9ill7vje.cloudfront.net/whatmore.js" defer="defer"></script>
+        <div id="whatmoreShopId" data="STRD4533114"></div>
+        <div id="whatmoreHeading" data="WATCH AND SHOP"></div>
+        <div id="whatmorePrimaryColor" data="#d97777"></div>
+        <div id="whatmoreSecondaryColor" data="#d97777"></div>
+        <div id="whatmoreTitleFontSize" data="28"></div>
+        <div id="whatmoreLandscapePadding" data="40"></div>
+        <div id="whatmoreTopBottomPadding" data="20"></div>
+        <div id="whatmoreVideoTileSize" data="80"></div>
+        <div id="whatmoreVideoTileSizePortrait" data="80"></div>
+        <div id="whatmoreTitleFont" data="sans-serif"></div>
+        <div id="whatmorePrimaryFont" data="sans-serif"></div>
+        <div id="whatmoreShowViews" data="show"></div>
+        <div class="whatmore-template-type" data="template-a"></div>
+        <div id="whatmoreIsInDesignMode" data="false"></div>
+        <div id="whatmoreUITheme" data="round"></div>
+        <div class="whatmore-render-root"></div>
+
+        <script>
+            // Hide loading indicator once Whatmore content loads
+            function hideLoadingIndicator() {
+                var loadingContainer = document.getElementById('loadingContainer');
+                if (loadingContainer) {
+                    loadingContainer.style.display = 'none';
+                }
+            }
+
+            // Check if Whatmore has loaded and hide loading indicator
+            function checkWhatmoreLoaded() {
+                var renderRoot = document.querySelector('.whatmore-render-root');
+                if (renderRoot && renderRoot.children.length > 0) {
+                    hideLoadingIndicator();
+                } else {
+                    // Check again after a short delay
+                    setTimeout(checkWhatmoreLoaded, 500);
+                }
+            }
+
+            // Start checking after the script should have loaded
+            setTimeout(checkWhatmoreLoaded, 1000);
+
+            // Fallback: hide loading after maximum wait time
+            setTimeout(hideLoadingIndicator, 10000);
+        </script>
+    </div>
+</body>
+
+</html>
