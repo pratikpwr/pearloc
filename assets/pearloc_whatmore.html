@@ -54,6 +54,20 @@
 </head>
 
 <body>
+
+    <!-- <div class="whatmore-base" style="min-height: 120px;">
+        <script type="text/javascript" src="https://d1qflh9ill7vje.cloudfront.net/whatmore.js" defer="defer"></script>
+        <div id="whatmoreShopId" data-wh="STRD4533114"> </div>
+        <div id="whatmoreStoriesTopBottomPadding" data-wh="0"> </div>
+        <div id="whatmoreStoryTileSize" data-wh="50"> </div>
+        <div id="whatmoreStoryTileSizeDesktop" data-wh="50"> </div>
+        <div class="whatmore-template-type" data-wh="template-stories-a"> </div>
+        <div id="whatmoreIsInDesignMode" data-wh="false"> </div>
+        <div id="whatmoreLandscapePadding" data-wh="0"></div>
+        <div class="whatmore-widget" data-wh="stories"> </div>
+        <div class="whatmore-render-root"> </div>
+    </div> -->
+
     <div class="whatmore-base">
         <!-- Loading indicator -->
         <div class="loading-container" id="loadingContainer">
@@ -65,14 +79,14 @@
         <link rel="preload" href="https://d1qflh9ill7vje.cloudfront.net/whatmore.js" as="script">
         <script type="text/javascript" src="https://d1qflh9ill7vje.cloudfront.net/whatmore.js" defer="defer"></script>
         <div id="whatmoreShopId" data="STRD4533114"></div>
-        <div id="whatmoreHeading" data="WATCH AND SHOP"></div>
+        <div id="whatmoreHeading" data="WATCH & SHOP"></div>
         <div id="whatmorePrimaryColor" data="#d97777"></div>
         <div id="whatmoreSecondaryColor" data="#d97777"></div>
         <div id="whatmoreTitleFontSize" data="28"></div>
         <div id="whatmoreLandscapePadding" data="40"></div>
-        <div id="whatmoreTopBottomPadding" data="20"></div>
-        <div id="whatmoreVideoTileSize" data="80"></div>
-        <div id="whatmoreVideoTileSizePortrait" data="80"></div>
+        <div id="whatmoreTopBottomPadding" data="40"></div>
+        <div id="whatmoreVideoTileSize" data="100"></div>
+        <div id="whatmoreVideoTileSizePortrait" data="130"></div>
         <div id="whatmoreTitleFont" data="sans-serif"></div>
         <div id="whatmorePrimaryFont" data="sans-serif"></div>
         <div id="whatmoreShowViews" data="show"></div>
@@ -102,7 +116,7 @@
             }
 
             // Start checking after the script should have loaded
-            setTimeout(checkWhatmoreLoaded, 1000);
+            setTimeout(checkWhatmoreLoaded, 300);
 
             // Fallback: hide loading after maximum wait time
             setTimeout(hideLoadingIndicator, 10000);
