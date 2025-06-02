@@ -75,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
   int _selectedIndex = 0;
   final List<String> _urls = [
-    'https://www.pearloc.com/',
+    'https://www.pearloc.com/app/',
     'https://www.pearloc.com/featured/',
     '', // This will be handled specially for video reels
     'https://www.pearloc.com/my-account/',
@@ -261,21 +261,21 @@ class _MyHomePageState extends State<MyHomePage> {
             _controller.runJavaScript('''
               (function() {
                 // Target the black banner at the top
-                var banners = document.querySelectorAll('div[style*="background-color: #000000"]');
-                banners.forEach(function(banner) {
-                  banner.style.display = 'none';
-                });
+                // var banners = document.querySelectorAll('div[style*="background-color: #000000"]');
+                // banners.forEach(function(banner) {
+                //   banner.style.display = 'none';
+                // });
                 
-                // Alternative approach targeting elements with the specific text
-                var allElements = document.querySelectorAll('div');
-                allElements.forEach(function(element) {
-                  if (element.textContent && 
-                      element.textContent.includes('Delivery') && 
-                      element.textContent.includes('COD Available') &&
-                      element.textContent.includes('10% off on Prepaid')) {
-                    element.style.display = 'none';
-                  }
-                });
+                // // Alternative approach targeting elements with the specific text
+                // var allElements = document.querySelectorAll('div');
+                // allElements.forEach(function(element) {
+                //   if (element.textContent && 
+                //       element.textContent.includes('Delivery') && 
+                //       element.textContent.includes('COD Available') &&
+                //       element.textContent.includes('10% off on Prepaid')) {
+                //     element.style.display = 'none';
+                //   }
+                // });
                 
                 // Hide the cart floating button
                 var cartButtons = document.querySelectorAll('a[href*="cart"]');

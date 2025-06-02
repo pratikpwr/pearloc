@@ -1,4 +1,4 @@
-package com.example.pearloc
+package com.pearloc.app
 
 import io.flutter.embedding.android.FlutterActivity
 
